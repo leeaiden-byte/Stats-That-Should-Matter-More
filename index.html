@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <title>2025 WBA Statistics (Qualified)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="styles.css" />
+
+  <style>
+    body { background:#ffffff !important; color:#111 !important; }
+
+    .site-header { background:#fff !important; border-bottom:1px solid #e5e7eb !important; }
+    .site-header h1 { color:#111 !important; }
+
+    .chip{
+      background:#f8fafc !important; color:#111 !important; border:1px solid #e5e7eb !important;
+    }
+    .chip.active{ background:#111827 !important; color:#fff !important; border-color:#111827 !important; }
+
+    .card { background:#fff !important; border:1px solid #e5e7eb !important; box-shadow:none !important; }
+    .card-body, .card-footer, .table-wrap { background:#fff !important; }
+    .card-header { background:#fff !important; border-bottom:1px solid #e5e7eb !important; }
+
+    .card-header.hero,
+    .card:nth-of-type(2) .card-header{
+      position:relative; overflow:hidden;
+      border:0 !important; padding:18px 16px !important;
+      color:#06101e !important;
+      background-image:
+        linear-gradient(0deg, rgba(255,255,255,.12), rgba(255,255,255,0)),
+        linear-gradient(135deg, #177fe8 0%, #3aa0ff 45%, #64ffda 100%) !important;
+      box-shadow: inset 0 -1px 0 rgba(0,0,0,.15), 0 4px 12px rgba(0,0,0,.08);
+      border-radius:12px 12px 0 0;
+    }
+    body[data-league="AL"] .card-header.hero,
+    body[data-league="AL"] .card:nth-of-type(2) .card-header{
+      background-image:
+        linear-gradient(0deg, rgba(255,255,255,.12), rgba(255,255,255,0)),
+        linear-gradient(135deg, #e74c80 0%, #ff7aa2 45%, #ffd166 100%) !important;
+    }
+    .card-header.hero::after,
+    .card:nth-of-type(2) .card-header::after{
+      content:""; position:absolute; left:0; right:0; bottom:0; height:3px;
+      background:linear-gradient(90deg, rgba(0,0,0,.12), rgba(0,0,0,.0));
+    }
+    .card-header.hero h2,
+    .card:nth-of-type(2) .card-header h2{
+      margin:0; font-size:20px; font-weight:800; letter-spacing:.2px;
+      text-shadow:0 1px 0 rgba(255,255,255,.35);
+    }
+    .card-header.hero .right #searchInput{
+      background:#ffffff !important; color:#0b1426 !important;
+      border:1px solid rgba(0,0,0,.15) !important; box-shadow:0 1px 2px rgba(0,0,0,.06) inset;
+    }
+
+    #statsTable thead{ background:#f3f4f6 !important; border-bottom:2px solid #d1d5db !important; }
+    #statsTable thead th{ color:#111 !important; border-right:1px solid #e5e7eb !important; }
+    #statsTable tbody tr:nth-child(odd){ background:#ffffff !important; }
+    #statsTable tbody tr:nth-child(even){ background:#fafafa !important; }
+    #statsTable td{ border-right:1px solid #f1f5f9 !important; border-bottom:1px solid #f1f5f9 !important; color:#111 !important; }
+
+    body[data-team="ARI"] .card-header.hero,
+    body[data-team="ARI"] .card:nth-of-type(2) .card-header { background-image:linear-gradient(0deg,rgba(255,255,255,.12),rgba(255,255,255,0)), linear-gradient(135deg,#A71930 0%,#000000 100%) !important; }
+    body[data-team="ATL"] .card-header.hero,
+    body[data-team="ATL"] .card:nth-of-type(2) .card-header { background-image:linear-gradient(0deg,rgba(255,255,255,.12),rgba(255,255,255,0)), linear-gradient(135deg,#13274F 0%,#CE1141 100%) !important; }
+    body[data-team="CHC"] .card-header.hero,
+    body[data-team="CHC"] .card:nth-of-type(2) .card-header { background-image:linear-gradient(0deg,rgba(255,255,255,.12),rgba(255,255,255,0)), linear-gradient(135deg,#0E3386 0%,#CC3433 100%) !important; }
+    body[data-team="CIN"] .card-header.hero,
+    body[data-team="CIN"] .card:nth-of-type(2) .card-header { background-image:linear-gradient(0deg,rgba(255,255,255,.12),rgba(255,255,255,0)), linear-gradient(135deg,#C6011F 0%,#000000 100%) !important; }
+    body[data-team="COL"] .card-header.hero,
+    body[data-team="COL"] .card:nth-of-type(2) .card-header { background-image:linear-gradient(0deg,rgba(255,255,255,.12),rgba(255,255,255,0)), linear-gradient(135deg,#33006F 0%,#C4CED4 100%) !important; }
+    body[data-team="LAD"] .card-header.hero,
+    body[data-team="LAD"] .card:nth-of-type(2) .card-header { background-image:linear-gradient(0deg,rgba(255,255,255,.12),rgba(255,255,255,0)), linear-gradient(135deg,#005A9C 0%,#A5ACAF 100%) !important; }
+    body[data-team="MIA"] .card-header.hero,
+    body[data-team="MIA"] .card:nth-of-type(2) .card-header { background-image:linear-gradient(0deg,rgba(255,255,255,.12),rgba(255,255,255,0)), linear-gradient(135deg,#00A3E0 0%,#EF3340 100%) !important; }
+    body[data-team="MIL"] .card-header.hero,
+    body[data-team="MIL"] .card:nth-of-type(2) .card-header { background-image:linear-gradient(0deg,rgba(255,255,255,.12),rgba(255,255,255,0)), linear-gradient(135deg,#12284B 0%,#FFC52F 100%) !important; }
+    body[data-team="NYM"] .card-header.hero,
+    body[data-team="NYM"] .card:nth-of-type(2) .card-header { background-image:linear-gradient(0deg,rgba(255,255,255,.12),rgba(255,255,255,0)), linear-gradient(135deg,#002D72 0%,#FF5910 100%) !important; }
+    body[data-team="PHI"] .card-header.hero,
+    body[data-team="PHI"] .card:nth-of-type(2) .card-header { background-image:linear-gradient(0deg,rgba(255,255,255,.12),rgba(255,255,255,0)), linear-gradient(135deg,#E81828 0%,#284898 100%) !important; }
+    body[data-team="PIT"] .card-header.hero,
+    body[data-team="PIT"] .card:nth-of-type(2) .card-header { background-image:linear-gradient(0deg,rgba(255,255,255,.12),rgba(255,255,255,0)), linear-gradient(135deg,#000000 0%,#FDB827 100%) !important; }
+    body[data-team="SDP"] .card-header.hero,
+    body[data-team="SDP"] .card:nth-of-type(2) .card-header { background-image:linear-gradient(0deg,rgba(255,255,255,.12),rgba(255,255,255,0)), linear-gradient(135deg,#2F241D 0%,#FFC425 100%) !important; }
+    body[data-team="SFG"] .card-header.hero,
+    body[data-team="SFG"] .card:nth-of-type(2) .card-header { background-image:linear-gradient(0deg,rgba(255,255,255,.12),rgba(255,255,255,0)), linear-gradient(135deg,#FD5A1E 0%,#27251F 100%) !important; }
+    body[data-team="STL"] .card-header.hero,
+    body[data-team="STL"] .card:nth-of-type(2) .card-header { background-image:linear-gradient(0deg,rgba(255,255,255,.12),rgba(255,255,255,0)), linear-gradient(135deg,#C41E3A 0%,#0C2340 100%) !important; }
+    body[data-team="WSN"] .card-header.hero,
+    body[data-team="WSN"] .card:nth-of-type(2) .card-header { background-image:linear-gradient(0deg,rgba(255,255,255,.12),rgba(255,255,255,0)), linear-gradient(135deg,#AB0003 0%,#14225A 100%) !important; }
+
+    body[data-team="BAL"] .card-header.hero,
+    body[data-team="BAL"] .card:nth-of-type(2) .card-header { background-image:linear-gradient(0deg,rgba(255,255,255,.12),rgba(255,255,255,0)), linear-gradient(135deg,#DF4601 0%,#000000 100%) !important; }
+    body[data-team="BOS"] .card-header.hero,
+    body[data-team="BOS"] .card:nth-of-type(2) .card-header { background-image:linear-gradient(0deg,rgba(255,255,255,.12),rgba(255,255,255,0)), linear-gradient(135deg,#BD3039 0%,#0D2B56 100%) !important; }
+    body[data-team="CWS"] .card-header.hero,
+    body[data-team="CWS"] .card:nth-of-type(2) .card-header { background-image:linear-gradient(0deg,rgba(255,255,255,.12),rgba(255,255,255,0)), linear-gradient(135deg,#27251F 0%,#C4CED4 100%) !important; }
+    body[data-team="CLE"] .card-header.hero,
+    body[data-team="CLE"] .card:nth-of-type(2) .card-header { background-image:linear-gradient(0deg,rgba(255,255,255,.12),rgba(255,255,255,0)), linear-gradient(135deg,#002B5C 0%,#E50022 100%) !important; }
+    body[data-team="DET"] .card-header.hero,
+    body[data-team="DET"] .card:nth-of-type(2) .card-header { background-image:linear-gradient(0deg,rgba(255,255,255,.12),rgba(255,255,255,0)), linear-gradient(135deg,#0C2340 0%,#FA4616 100%) !important; }
+    body[data-team="HOU"] .card-header.hero,
+    body[data-team="HOU"] .card:nth-of-type(2) .card-header { background-image:linear-gradient(0deg,rgba(255,255,255,.12),rgba(255,255,255,0)), linear-gradient(135deg,#EB6E1F 0%,#002D62 100%) !important; }
+    body[data-team="KCR"] .card-header.hero,
+    body[data-team="KCR"] .card:nth-of-type(2) .card-header { background-image:linear-gradient(0deg,rgba(255,255,255,.12),rgba(255,255,255,0)), linear-gradient(135deg,#004687 0%,#C09A5B 100%) !important; }
+    body[data-team="LAA"] .card-header.hero,
+    body[data-team="LAA"] .card:nth-of-type(2) .card-header { background-image:linear-gradient(0deg,rgba(255,255,255,.12),rgba(255,255,255,0)), linear-gradient(135deg,#BA0021 0%,#003263 100%) !important; }
+    body[data-team="MIN"] .card-header.hero,
+    body[data-team="MIN"] .card:nth-of-type(2) .card-header { background-image:linear-gradient(0deg,rgba(255,255,255,.12),rgba(255,255,255,0)), linear-gradient(135deg,#0C2340 0%,#D31145 100%) !important; }
+    body[data-team="NYY"] .card-header.hero,
+    body[data-team="NYY"] .card:nth-of-type(2) .card-header { background-image:linear-gradient(0deg,rgba(255,255,255,.12),rgba(255,255,255,0)), linear-gradient(135deg,#003087 0%,#C4CED4 100%) !important; }
+    body[data-team="OAK"] .card-header.hero,
+    body[data-team="OAK"] .card:nth-of-type(2) .card-header { background-image:linear-gradient(0deg,rgba(255,255,255,.12),rgba(255,255,255,0)), linear-gradient(135deg,#003831 0%,#EFB21E 100%) !important; }
+    body[data-team="SEA"] .card-header.hero,
+    body[data-team="SEA"] .card:nth-of-type(2) .card-header { background-image:linear-gradient(0deg,rgba(255,255,255,.12),rgba(255,255,255,0)), linear-gradient(135deg,#0C2C56 0%,#005C5C 100%) !important; }
+    body[data-team="TBR"] .card-header.hero,
+    body[data-team="TBR"] .card:nth-of-type(2) .card-header { background-image:linear-gradient(0deg,rgba(255,255,255,.12),rgba(255,255,255,0)), linear-gradient(135deg,#092C5C 0%,#8FBCE6 100%) !important; }
+    body[data-team="TEX"] .card-header.hero,
+    body[data-team="TEX"] .card:nth-of-type(2) .card-header { background-image:linear-gradient(0deg,rgba(255,255,255,.12),rgba(255,255,255,0)), linear-gradient(135deg,#003278 0%,#C0111F 100%) !important; }
+    body[data-team="TOR"] .card-header.hero,
+    body[data-team="TOR"] .card:nth-of-type(2) .card-header { background-image:linear-gradient(0deg,rgba(255,255,255,.12),rgba(255,255,255,0)), linear-gradient(135deg,#134A8E 0%,#E8291C 100%) !important; }
+
+    .team-select { display:flex; align-items:center; gap:8px; }
+    .team-select select{
+      background:#f8fafc; border:1px solid #e5e7eb; color:#111; padding:6px 8px; border-radius:8px;
+    }
+  </style>
+</head>
+
+<body data-league="NL">
+  <header class="site-header">
+    <h1>Stats That Should Matter More</h1>
+    <nav class="filters">
+      <div class="filter-group">
+        <span class="label">League</span>
+        <button class="chip" data-filter="league" data-value="AL">AL</button>
+        <button class="chip active" data-filter="league" data-value="NL">NL</button>
+      </div>
+
+      <div class="filter-group">
+        <span class="label">Type</span>
+        <button class="chip active" data-filter="kind" data-value="batter">Batter</button>
+        <button class="chip" data-filter="kind" data-value="pitcher">Pitcher</button>
+      </div>
+
+      <div class="filter-group" id="pitcher-subgroup" style="display:none;">
+        <span class="label">Pitcher Type</span>
+        <button class="chip active" data-filter="ptype" data-value="SP">Starting Pitcher</button>
+        <button class="chip" data-filter="ptype" data-value="RP">Relief Pitcher</button>
+      </div>
+
+      <div class="filter-group">
+        <span class="label">Stats</span>
+        <button class="chip active" data-filter="mode" data-value="classic">Classic</button>
+        <button class="chip" data-filter="mode" data-value="saber">Saber</button>
+      </div>
+
+      <div class="filter-group team-select">
+        <span class="label">Team</span>
+        <select id="teamSelect" aria-label="Team">
+          <option value="">(League Basic Color)</option>
+          <optgroup label="National League">
+            <option value="ARI">ARI</option><option value="ATL">ATL</option>
+            <option value="CHC">CHC</option><option value="CIN">CIN</option>
+            <option value="COL">COL</option><option value="LAD">LAD</option>
+            <option value="MIA">MIA</option><option value="MIL">MIL</option>
+            <option value="NYM">NYM</option><option value="PHI">PHI</option>
+            <option value="PIT">PIT</option><option value="SDP">SDP</option>
+            <option value="SFG">SFG</option><option value="STL">STL</option>
+            <option value="WSN">WSN</option>
+          </optgroup>
+          <optgroup label="American League">
+            <option value="BAL">BAL</option><option value="BOS">BOS</option>
+            <option value="CWS">CWS</option><option value="CLE">CLE</option>
+            <option value="DET">DET</option><option value="HOU">HOU</option>
+            <option value="KCR">KCR</option><option value="LAA">LAA</option>
+            <option value="MIN">MIN</option><option value="NYY">NYY</option>
+            <option value="OAK">OAK</option><option value="SEA">SEA</option>
+            <option value="TBR">TBR</option><option value="TEX">TEX</option>
+            <option value="TOR">TOR</option>
+          </optgroup>
+        </select>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <div class="card-header hero">
+        <h2 id="table-title">NL • Batter • Classic</h2>
+        <div class="right">
+          <input id="searchInput" type="search" placeholder="Player Search" />
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table id="statsTable">
+          <thead id="tableHead"></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+      <div class="card-footer">
+        <small>Clicking a column header sorts the data (ascending/descending).</small>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <h2>My Column/Article</h2>
+      </div>
+      <div class="card-body">
+        <div class="editor">
+          <input id="postTitle" type="text" placeholder="Title (ex: Who is the best NL starting pitcher)" />
+          <textarea id="postBody" rows="6" placeholder="Write your own analysis based on the datas. ex: WAR, wOBA, K-BB%, FIP, wRC+, Defense Indicaors etc..."></textarea>
+          <button id="savePost" class="primary">Post</button>
+        </div>
+        <div id="postsList" class="posts"></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"
+    integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+  <script src="java.js"></script>
+  <script>
+    (function(){
+      const body = document.body;
+      const teamSel = document.getElementById('teamSelect');
+
+      document.addEventListener('click', (e)=>{
+        const btn = e.target.closest('.chip[data-filter="league"]');
+        if(!btn) return;
+        const league = btn.getAttribute('data-value');
+        const t = body.dataset.team || "";
+        const isNL = ["ARI","ATL","CHC","CIN","COL","LAD","MIA","MIL","NYM","PHI","PIT","SDP","SFG","STL","WSN"].includes(t);
+        const isAL = ["BAL","BOS","CWS","CLE","DET","HOU","KCR","LAA","MIN","NYY","OAK","SEA","TBR","TEX","TOR"].includes(t);
+        if ((league==="NL" && isAL) || (league==="AL" && isNL)) {
+          body.dataset.team = "";
+          teamSel.value = "";
+        }
+      });
+
+      teamSel.addEventListener('change', ()=>{
+        const v = teamSel.value;
+        if(v){
+          body.dataset.team = v;
+          const NL = ["ARI","ATL","CHC","CIN","COL","LAD","MIA","MIL","NYM","PHI","PIT","SDP","SFG","STL","WSN"];
+          body.dataset.league = NL.includes(v) ? "NL" : "AL";
+          document.querySelectorAll('.chip[data-filter="league"]').forEach(c=>c.classList.remove('active'));
+          const target = document.querySelector(`.chip[data-filter="league"][data-value="${body.dataset.league}"]`);
+          if(target) target.classList.add('active');
+        }else{
+          body.dataset.team = "";
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
