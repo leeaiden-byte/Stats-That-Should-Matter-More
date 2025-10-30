@@ -93,8 +93,8 @@ function resolveFile() {
 function loadAndRender() {
   const file = resolveFile();
   if (!file) {
-    console.error("파일 매핑이 없습니다:", state);
-    updateTitle("(매핑 오류)");
+    console.error("There is no file mapping:", state);
+    updateTitle("(Mapping Error)");
     return;
   }
 
@@ -106,7 +106,7 @@ function loadAndRender() {
         state.headers = [];
         state.rows = [];
         renderTable();
-        updateTitle("(빈 데이터)");
+        updateTitle("(Empty Data)");
         return;
       }
 
@@ -123,11 +123,11 @@ function loadAndRender() {
       applyTheme(); 
     })
     .fail((xhr, status, err) => {
-      console.error("CSV 로드 실패:", status, err);
+      console.error("CSV load failed:", status, err);
       state.headers = [];
       state.rows = [];
       renderTable();
-      updateTitle("(데이터 로드 실패)");
+      updateTitle("(Data load failed)");
     });
 }
 
@@ -145,7 +145,7 @@ function renderTable() {
   tbody.empty();
 
   if (state.headers.length === 0) {
-    thead.append(`<tr><th>데이터 없음</th></tr>`);
+    thead.append(`<tr><th>No Data</th></tr>`);
     return;
   }
 
@@ -247,7 +247,7 @@ function savePost() {
   const title = $("#postTitle").val().trim();
   const body = $("#postBody").val().trim();
   if (!title || !body) {
-    alert("제목과 본문을 모두 입력하세요.");
+    alert("Enter both the title and the body text.");
     return;
   }
   const posts = loadPosts();
@@ -275,7 +275,7 @@ function renderPosts() {
   const list = $("#postsList").empty();
   const posts = loadPosts();
   if (posts.length === 0) {
-    list.append(`<div class="post"><small>아직 게시된 칼럼이 없습니다.</small></div>`);
+    list.append(`<div class="post"><small>No columns have been posted yet.</small></div>`);
     return;
   }
   posts.forEach(p => {
