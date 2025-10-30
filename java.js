@@ -17,15 +17,17 @@ const FILES = {
 
 const state = {
   league: "NL",
-  kind: "batter",  
-  ptype: "SP",      
-  mode: "classic",  
+  kind: "batter",
+  ptype: "SP", 
+  mode: "classic",
   headers: [],
   rows: [],
   sortKey: null,
   sortDir: "asc",
   search: ""
 };
+
+const DRAFT_KEY = "wba_draft";
 
 function parseCSV(text) {
   const rows = [];
@@ -38,14 +40,28 @@ function parseCSV(text) {
     const next = text[i + 1];
 
     if (inQuotes) {
-      if (char === '"' && next === '"') { cell += '"'; i++; }
-      else if (char === '"') { inQuotes = false; }
-      else { cell += char; }
+      if (char === '"' && next === '"') {
+        cell += '"';
+        i++;
+      } else if (char === '"') {
+        inQuotes = false;
+      } else {
+        cell += char;
+      }
     } else {
-      if (char === '"') inQuotes = true;
-      else if (char === ",") { row.push(cell); cell = ""; }
-      else if (char === "\n") { row.push(cell); rows.push(row); row = []; cell = ""; }
-      else if (char !== "\r") { cell += char; }
+      if (char === '"') {
+        inQuotes = true;
+      } else if (char === ",") {
+        row.push(cell);
+        cell = "";
+      } else if (char === "\n") {
+        row.push(cell);
+        rows.push(row);
+        row = [];
+        cell = "";
+      } else if (char !== "\r") {
+        cell += char;
+      }
     }
   }
   if (cell.length > 0 || inQuotes || row.length > 0) {
@@ -59,8 +75,8 @@ function smartCoerce(value) {
   if (value === null || value === undefined) return value;
   const v = String(value).trim();
   if (v === "") return v;
-  if (/^-?\d+(\.\d+)?%$/.test(v)) return parseFloat(v.replace("%",""));
-  if (/^-?\d+(\.\d+)?$/.test(v))  return parseFloat(v);
+  if (/^-?\d+(\.\d+)?%$/.test(v)) return parseFloat(v.replace("%", ""));
+  if (/^-?\d+(\.\d+)?$/.test(v)) return parseFloat(v);
   return value;
 }
 
@@ -71,7 +87,6 @@ function guessPlayerNameKey(headers) {
   return likely || null;
 }
 
-
 function applyTheme() {
   document.body.dataset.league = state.league;
 }
@@ -79,7 +94,7 @@ function applyTheme() {
 $(function () {
   initUI();
   loadAndRender();
-  applyTheme(); 
+  applyTheme();
 });
 
 function resolveFile() {
@@ -120,7 +135,7 @@ function loadAndRender() {
       state.sortKey = null;
       renderTable();
       updateTitle();
-      applyTheme(); 
+      applyTheme();
     })
     .fail((xhr, status, err) => {
       console.error("CSV load failed:", status, err);
@@ -131,7 +146,7 @@ function loadAndRender() {
     });
 }
 
-function updateTitle(extra="") {
+function updateTitle(extra = "") {
   const kindText = (state.kind === "batter") ? "Batter" : (state.ptype === "SP" ? "Starting Pitcher" : "Relief Pitcher");
   const modeText = (state.mode === "classic") ? "Classic" : "Saber";
   const base = `${state.league} • ${kindText} • ${modeText}`;
@@ -221,9 +236,9 @@ function initUI() {
     $(this).addClass("active");
 
     if (filter === "league") state.league = val;
-    if (filter === "kind")   state.kind   = val;
-    if (filter === "ptype")  state.ptype  = val;
-    if (filter === "mode")   state.mode   = val;
+    if (filter === "kind") state.kind = val;
+    if (filter === "ptype") state.ptype = val;
+    if (filter === "mode") state.mode = val;
 
     if (state.kind === "pitcher") $("#pitcher-subgroup").show();
     else $("#pitcher-subgroup").hide();
@@ -239,7 +254,13 @@ function initUI() {
     renderTable();
   });
 
+  loadDraft();
+
+  $("#postTitle").on("input", saveDraft);
+  $("#postBody").on("input", saveDraft);
+
   $("#savePost").on("click", savePost);
+
   renderPosts();
 }
 
@@ -258,8 +279,8 @@ function savePost() {
     when: new Date().toISOString()
   });
   localStorage.setItem("wba_posts", JSON.stringify(posts));
-  $("#postTitle").val("");
-  $("#postBody").val("");
+
+  saveDraft();
   renderPosts();
 }
 
@@ -290,21 +311,45 @@ function renderPosts() {
   });
 }
 
+function saveDraft() {
+  const title = $("#postTitle").val();
+  const body = $("#postBody").val();
+  const draft = { title, body };
+  localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+}
+
+function loadDraft() {
+  try {
+    const draft = JSON.parse(localStorage.getItem(DRAFT_KEY) || "{}");
+    if (draft.title) $("#postTitle").val(draft.title);
+    if (draft.body) $("#postBody").val(draft.body);
+  } catch (e) {}
+}
+
 function formatWhen(iso) {
   try {
     const d = new Date(iso);
     const yyyy = d.getFullYear();
-    const mm = String(d.getMonth()+1).padStart(2,"0");
-    const dd = String(d.getDate()).padStart(2,"0");
-    const hh = String(d.getHours()).padStart(2,"0");
-    const mi = String(d.getMinutes()).padStart(2,"0");
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    const hh = String(d.getHours()).padStart(2, "0");
+    const mi = String(d.getMinutes()).padStart(2, "0");
     return `${yyyy}-${mm}-${dd} ${hh}:${mi}`;
-  } catch { return iso; }
+  } catch {
+    return iso;
+  }
 }
 
 function escapeHTML(s) {
   return String(s).replace(/[&<>"']/g, c => ({
-    "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    "\"": "&quot;",
+    "'": "&#39;"
   }[c]));
 }
-function nl2br(s) { return s.replace(/\n/g, "<br/>"); }
+
+function nl2br(s) {
+  return String(s).replace(/\n/g, "<br/>");
+}
