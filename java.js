@@ -1,3 +1,6 @@
+
+const API_BASE = "https://stats-that-should-matter-more-default-rtdb.firebaseio.com/posts.json";
+
 const FILES = {
   batter: {
     AL: { classic: "AL_classic_full.csv", saber: "AL_saber_full.csv" },
@@ -18,7 +21,7 @@ const FILES = {
 const state = {
   league: "NL",
   kind: "batter",
-  ptype: "SP", 
+  ptype: "SP",
   mode: "classic",
   headers: [],
   rows: [],
@@ -28,6 +31,15 @@ const state = {
 };
 
 const DRAFT_KEY = "wba_draft";
+
+
+function firebaseToArray(obj) {
+  if (!obj) return [];
+  
+  return Object.entries(obj)
+    .map(([id, v]) => ({ id, ...v }))
+    .sort((a, b) => (b.when || "").localeCompare(a.when || ""));
+}
 
 function parseCSV(text) {
   const rows = [];
@@ -40,28 +52,14 @@ function parseCSV(text) {
     const next = text[i + 1];
 
     if (inQuotes) {
-      if (char === '"' && next === '"') {
-        cell += '"';
-        i++;
-      } else if (char === '"') {
-        inQuotes = false;
-      } else {
-        cell += char;
-      }
+      if (char === '"' && next === '"') { cell += '"'; i++; }
+      else if (char === '"') { inQuotes = false; }
+      else { cell += char; }
     } else {
-      if (char === '"') {
-        inQuotes = true;
-      } else if (char === ",") {
-        row.push(cell);
-        cell = "";
-      } else if (char === "\n") {
-        row.push(cell);
-        rows.push(row);
-        row = [];
-        cell = "";
-      } else if (char !== "\r") {
-        cell += char;
-      }
+      if (char === '"') inQuotes = true;
+      else if (char === ",") { row.push(cell); cell = ""; }
+      else if (char === "\n") { row.push(cell); rows.push(row); row = []; cell = ""; }
+      else if (char !== "\r") { cell += char; }
     }
   }
   if (cell.length > 0 || inQuotes || row.length > 0) {
@@ -75,8 +73,8 @@ function smartCoerce(value) {
   if (value === null || value === undefined) return value;
   const v = String(value).trim();
   if (v === "") return v;
-  if (/^-?\d+(\.\d+)?%$/.test(v)) return parseFloat(v.replace("%", ""));
-  if (/^-?\d+(\.\d+)?$/.test(v)) return parseFloat(v);
+  if (/^-?\d+(\.\d+)?%$/.test(v)) return parseFloat(v.replace("%",""));
+  if (/^-?\d+(\.\d+)?$/.test(v))  return parseFloat(v);
   return value;
 }
 
@@ -95,6 +93,7 @@ $(function () {
   initUI();
   loadAndRender();
   applyTheme();
+  fetchPosts();
 });
 
 function resolveFile() {
@@ -146,7 +145,7 @@ function loadAndRender() {
     });
 }
 
-function updateTitle(extra = "") {
+function updateTitle(extra="") {
   const kindText = (state.kind === "batter") ? "Batter" : (state.ptype === "SP" ? "Starting Pitcher" : "Relief Pitcher");
   const modeText = (state.mode === "classic") ? "Classic" : "Saber";
   const base = `${state.league} • ${kindText} • ${modeText}`;
@@ -236,9 +235,9 @@ function initUI() {
     $(this).addClass("active");
 
     if (filter === "league") state.league = val;
-    if (filter === "kind") state.kind = val;
-    if (filter === "ptype") state.ptype = val;
-    if (filter === "mode") state.mode = val;
+    if (filter === "kind")   state.kind   = val;
+    if (filter === "ptype")  state.ptype  = val;
+    if (filter === "mode")   state.mode   = val;
 
     if (state.kind === "pitcher") $("#pitcher-subgroup").show();
     else $("#pitcher-subgroup").hide();
@@ -255,13 +254,23 @@ function initUI() {
   });
 
   loadDraft();
-
   $("#postTitle").on("input", saveDraft);
   $("#postBody").on("input", saveDraft);
 
   $("#savePost").on("click", savePost);
+}
 
-  renderPosts();
+function fetchPosts() {
+  fetch(API_BASE)
+    .then(res => res.json())
+    .then(data => {
+      const posts = firebaseToArray(data);
+      renderPosts(posts);
+    })
+    .catch(err => {
+      console.error("fetch posts failed:", err);
+      renderPosts([]);
+    });
 }
 
 function savePost() {
@@ -271,31 +280,35 @@ function savePost() {
     alert("Enter both the title and the body text.");
     return;
   }
-  const posts = loadPosts();
-  posts.unshift({
-    id: Date.now(),
+
+  const postData = {
     title,
     body,
     when: new Date().toISOString()
-  });
-  localStorage.setItem("wba_posts", JSON.stringify(posts));
+  };
+
+  fetch(API_BASE, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(postData)
+  })
+    .then(res => {
+      if (!res.ok) throw new Error("post failed");
+      return res.json();
+    })
+    .then(() => {
+      fetchPosts();
+    })
+    .catch(err => {
+      console.error("post error:", err);
+    });
 
   saveDraft();
-  renderPosts();
 }
 
-function loadPosts() {
-  try {
-    return JSON.parse(localStorage.getItem("wba_posts") || "[]");
-  } catch {
-    return [];
-  }
-}
-
-function renderPosts() {
+function renderPosts(posts) {
   const list = $("#postsList").empty();
-  const posts = loadPosts();
-  if (posts.length === 0) {
+  if (!posts || posts.length === 0) {
     list.append(`<div class="post"><small>No columns have been posted yet.</small></div>`);
     return;
   }
@@ -317,7 +330,6 @@ function saveDraft() {
   const draft = { title, body };
   localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
 }
-
 function loadDraft() {
   try {
     const draft = JSON.parse(localStorage.getItem(DRAFT_KEY) || "{}");
@@ -330,26 +342,16 @@ function formatWhen(iso) {
   try {
     const d = new Date(iso);
     const yyyy = d.getFullYear();
-    const mm = String(d.getMonth() + 1).padStart(2, "0");
-    const dd = String(d.getDate()).padStart(2, "0");
-    const hh = String(d.getHours()).padStart(2, "0");
-    const mi = String(d.getMinutes()).padStart(2, "0");
+    const mm = String(d.getMonth()+1).padStart(2,"0");
+    const dd = String(d.getDate()).padStart(2,"0");
+    const hh = String(d.getHours()).padStart(2,"0");
+    const mi = String(d.getMinutes()).padStart(2,"0");
     return `${yyyy}-${mm}-${dd} ${hh}:${mi}`;
-  } catch {
-    return iso;
-  }
+  } catch { return iso; }
 }
-
 function escapeHTML(s) {
   return String(s).replace(/[&<>"']/g, c => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    "\"": "&quot;",
-    "'": "&#39;"
+    "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"
   }[c]));
 }
-
-function nl2br(s) {
-  return String(s).replace(/\n/g, "<br/>");
-}
+function nl2br(s) { return String(s).replace(/\n/g, "<br/>"); }
