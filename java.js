@@ -1,4 +1,3 @@
-
 const API_BASE = "https://stats-that-should-matter-more-default-rtdb.firebaseio.com/posts.json";
 
 const FILES = {
@@ -32,12 +31,23 @@ const state = {
 
 const DRAFT_KEY = "wba_draft";
 
-
+// ✅ 수정된 부분: 이상한 노드 / title·body 없는 데이터 필터링
 function firebaseToArray(obj) {
-  if (!obj) return [];
-  
+  if (!obj || typeof obj !== "object") return [];
+
   return Object.entries(obj)
-    .map(([id, v]) => ({ id, ...v }))
+    .map(([id, v]) => {
+      if (!v || typeof v !== "object") return null;
+
+      const title = typeof v.title === "string" ? v.title : "";
+      const body  = typeof v.body  === "string" ? v.body  : "";
+      const when  = typeof v.when  === "string" ? v.when  : "";
+
+      if (!title && !body) return null;
+
+      return { id, ...v, title, body, when };
+    })
+    .filter(Boolean)
     .sort((a, b) => (b.when || "").localeCompare(a.when || ""));
 }
 
@@ -338,16 +348,21 @@ function loadDraft() {
   } catch (e) {}
 }
 
+// ✅ 수정된 부분: 잘못된 날짜 / 빈 값이면 깔끔하게 처리
 function formatWhen(iso) {
+  if (!iso) return "";
   try {
     const d = new Date(iso);
+    if (isNaN(d.getTime())) return "";
     const yyyy = d.getFullYear();
     const mm = String(d.getMonth()+1).padStart(2,"0");
     const dd = String(d.getDate()).padStart(2,"0");
     const hh = String(d.getHours()).padStart(2,"0");
     const mi = String(d.getMinutes()).padStart(2,"0");
     return `${yyyy}-${mm}-${dd} ${hh}:${mi}`;
-  } catch { return iso; }
+  } catch {
+    return "";
+  }
 }
 function escapeHTML(s) {
   return String(s).replace(/[&<>"']/g, c => ({
