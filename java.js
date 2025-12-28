@@ -31,7 +31,7 @@ const state = {
 
 const DRAFT_KEY = "wba_draft";
 
-// ✅ 수정된 부분: 이상한 노드 / title·body 없는 데이터 필터링
+// ✅ Firebase 데이터 -> 배열 변환 (title/body 없는 쓰레기 노드 필터링)
 function firebaseToArray(obj) {
   if (!obj || typeof obj !== "object") return [];
 
@@ -238,7 +238,9 @@ function renderTable() {
 }
 
 function initUI() {
-  $(".chip").on("click", function () {
+  $(".chip").on("click", function (e) {
+    e.preventDefault();
+
     const filter = $(this).data("filter");
     const val = $(this).data("value");
     $(`.chip[data-filter="${filter}"]`).removeClass("active");
@@ -267,7 +269,11 @@ function initUI() {
   $("#postTitle").on("input", saveDraft);
   $("#postBody").on("input", saveDraft);
 
-  $("#savePost").on("click", savePost);
+  // ✅ 핵심 수정: 클릭 시 preventDefault + savePost 보장 호출
+  $("#savePost").on("click", function (e) {
+    e.preventDefault();
+    savePost();
+  });
 }
 
 function fetchPosts() {
@@ -284,6 +290,8 @@ function fetchPosts() {
 }
 
 function savePost() {
+  console.log("savePost called"); // ✅ 디버깅 로그 (문제 해결되면 지워도 됨)
+
   const title = $("#postTitle").val().trim();
   const body = $("#postBody").val().trim();
   if (!title || !body) {
@@ -303,17 +311,20 @@ function savePost() {
     body: JSON.stringify(postData)
   })
     .then(res => {
-      if (!res.ok) throw new Error("post failed");
+      if (!res.ok) return res.text().then(t => { throw new Error(`${res.status} ${t}`); });
       return res.json();
     })
     .then(() => {
+      // ✅ 성공 UX: 입력칸 비우기 + draft 제거 + 다시 불러오기
+      $("#postTitle").val("");
+      $("#postBody").val("");
+      localStorage.removeItem(DRAFT_KEY);
       fetchPosts();
     })
     .catch(err => {
       console.error("post error:", err);
+      alert("Post failed. Check DevTools Network/Console.");
     });
-
-  saveDraft();
 }
 
 function renderPosts(posts) {
@@ -340,6 +351,7 @@ function saveDraft() {
   const draft = { title, body };
   localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
 }
+
 function loadDraft() {
   try {
     const draft = JSON.parse(localStorage.getItem(DRAFT_KEY) || "{}");
@@ -348,7 +360,6 @@ function loadDraft() {
   } catch (e) {}
 }
 
-// ✅ 수정된 부분: 잘못된 날짜 / 빈 값이면 깔끔하게 처리
 function formatWhen(iso) {
   if (!iso) return "";
   try {
@@ -364,6 +375,7 @@ function formatWhen(iso) {
     return "";
   }
 }
+
 function escapeHTML(s) {
   return String(s).replace(/[&<>"']/g, c => ({
     "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"
